@@ -1235,7 +1235,7 @@ function EmployeesPage({ assets, employees, selectedEmployee, setSelectedEmploye
         {filtered.map((e) => {
           const empAssets = assetsFor(e["Employee ID"]);
           const compliantPct = empAssets.length ? Math.round((empAssets.filter((a) => a["Compliance Status"] === "Compliant").length / empAssets.length) * 100) : 100;
-          const warrantyAlerts = empAssets.filter((a) => { const d = daysUntil(a["Warranty End"]); return d != null && d < 30; }).length;
+          const warrantyAlerts = empAssets.filter((a) => { const d = daysUntil(a["Warranty End"]); return d != null && d <= 30; }).length; // expired or expiring within 30 days
           return (
             <Card key={e["Employee ID"]} className="cursor-pointer hover:shadow-md transition-shadow" >
               <div onClick={() => setSelectedEmployee(e)}>
@@ -1269,14 +1269,15 @@ function DepartmentsPage({ assets, departments, selectedDept, setSelectedDept })
     const items = assets.filter((a) => a["Department"] === d["Department"]);
     const compliant = items.filter((a) => a["Compliance Status"] === "Compliant").length;
     const critical = items.filter((a) => a["Asset Criticality"] === "Critical").length;
-    const warrantyExp = items.filter((a) => { const dd = daysUntil(a["Warranty End"]); return dd != null && dd < 30; }).length;
+    const warrantyExp = items.filter((a) => { const dd = daysUntil(a["Warranty End"]); return dd != null && dd >= 0 && dd <= 30; }).length;
+    const warrantyExpired = items.filter((a) => { const dd = daysUntil(a["Warranty End"]); return dd != null && dd < 0; }).length;
     const health = items.length ? Math.round(avg(items, "Asset Health Score")) : 0;
     const value = sum(items, "Current Asset Value");
     const compliancePct = items.length ? Math.round((compliant / items.length) * 100) : 0;
-    const catCounts = Object.entries(groupBy(items, "Asset Category")).sort((a, b) => b[1].length - a[1].length).slice(0, 3);
+    const catCounts = Object.entries(groupBy(items, "Asset Category")).sort((a, b) => b[1].length - a[1].length);
     const mfgCounts = Object.entries(groupBy(items, "Manufacturer")).sort((a, b) => b[1].length - a[1].length).slice(0, 3);
     const topUsers = Object.entries(groupBy(items, "Assigned User")).sort((a, b) => b[1].length - a[1].length).slice(0, 4);
-    return { ...d, items, compliant, critical, warrantyExp, health, value, compliancePct, catCounts, mfgCounts, topUsers };
+    return { ...d, items, compliant, critical, warrantyExp, warrantyExpired, health, value, compliancePct, catCounts, mfgCounts, topUsers };
   }), [assets, departments]);
 
   if (selectedDept) {
@@ -1298,14 +1299,16 @@ function DepartmentsPage({ assets, departments, selectedDept, setSelectedDept })
             </div>
           </div>
         </Card>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <p className="text-xs text-slate-400">المؤشرات التالية خصائص قد تتداخل (الأصل الواحد قد يكون حرجاً وضمانه منتهٍ معاً)، فهي ليست أجزاءً من إجمالي الأصول.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card><SectionTitle title="الأصول الحرجة" icon={AlertTriangle} /><div className="text-3xl font-semibold text-red-500">{d.critical}</div></Card>
-          <Card><SectionTitle title="ضمان قارب على الانتهاء" icon={Clock} /><div className="text-3xl font-semibold text-amber-500">{d.warrantyExp}</div></Card>
+          <Card><SectionTitle title="ضمان منتهٍ" icon={AlertTriangle} /><div className="text-3xl font-semibold text-red-500">{d.warrantyExpired}</div></Card>
+          <Card><SectionTitle title="ضمان ينتهي خلال 30 يوماً" icon={Clock} /><div className="text-3xl font-semibold text-amber-500">{d.warrantyExp}</div></Card>
           <Card><SectionTitle title="الميزانية (⃁)" icon={FileBarChart} /><div className="text-3xl font-semibold">{fmtCompactUSD(d["Budget (SAR)"])}</div></Card>
         </div>
         <div className="grid sm:grid-cols-3 gap-4">
           <Card>
-            <SectionTitle title="أبرز الفئات" icon={Boxes} />
+            <SectionTitle title="الفئات (كلها)" icon={Boxes} />
             {d.catCounts.map(([name, items]) => <div key={name} className="flex justify-between text-sm py-1"><span>{tr(name)}</span><span className="text-slate-400">{items.length}</span></div>)}
           </Card>
           <Card>
