@@ -755,7 +755,7 @@ function DashboardPage({ kpis, categoryDist, deptValue, manufacturerDist, purcha
     { icon: Package, label: "الأصول خارج الخدمة", value: kpis.retired, tone: "slate" },
     { icon: RefreshCw, label: "أصول تحت الصيانة", value: kpis.maintenance, tone: "warning" },
     { icon: FileBarChart, label: "القيمة الإجمالية للأصول", value: fmtCompactUSD(kpis.totalValue), tone: "info" },
-    { icon: TrendingUp, label: "متوسط مؤشر الصحة", value: kpis.avgHealth.toFixed(0), suffix: "/100", tone: "primary" },
+    { icon: TrendingUp, label: "متوسط حالة الأصول", value: kpis.avgHealth.toFixed(0), suffix: "/100", tone: "primary", trendLabel: "عمر الجهاز وسلامته الفنية (0–100)" },
     { icon: ShieldCheck, label: "الأصول الممتثلة", value: kpis.compliant, tone: "success" },
     { icon: ShieldAlert, label: "الأصول غير الممتثلة", value: kpis.nonCompliant, tone: "danger" },
     { icon: Clock, label: "ضمان ينتهي خلال 30 يوماً", value: kpis.warrantyExpiring30, tone: "warning" },
@@ -888,7 +888,7 @@ function DashboardPage({ kpis, categoryDist, deptValue, manufacturerDist, purcha
           <table className="w-full text-sm">
             <thead>
               <tr className="text-right text-xs text-slate-400 border-b border-slate-100 dark:border-slate-700">
-                <th className="py-2 pl-4">الأصل</th><th className="py-2 pl-4">القسم</th><th className="py-2 pl-4">الأهمية</th><th className="py-2 pl-4">الامتثال</th><th className="py-2 pl-4">الصحة</th>
+                <th className="py-2 pl-4">الأصل</th><th className="py-2 pl-4">القسم</th><th className="py-2 pl-4">الأهمية</th><th className="py-2 pl-4">الامتثال</th><th className="py-2 pl-4" title="مؤشر حالة الأصل (0–100): قيمة عمود Asset Health Score في سجل الأصول، تعكس عمر الجهاز وسلامته الفنية وحمايته. 90 فأعلى ممتاز، 75–89 جيد، 60–74 يحتاج متابعة، أقل من 60 يحتاج استبدالاً أو إصلاحاً.">حالة الأصل</th>
               </tr>
             </thead>
             <tbody>
@@ -952,7 +952,7 @@ function InventoryPage({ assets, selectedAsset, setSelectedAsset }) {
     { key: "Assigned User", label: "مُسند إلى" },
     { key: "Asset Status", label: "الحالة" },
     { key: "Compliance Status", label: "الامتثال" },
-    { key: "Asset Health Score", label: "الصحة" },
+    { key: "Asset Health Score", label: "حالة الأصل" },
   ];
 
   const toggleSort = (key) => {
@@ -1112,7 +1112,7 @@ function AssetDrawer({ asset, onClose, tab, setTab }) {
               <DetailRow label="التخزين" value={`${asset["Storage (GB)"]} جيجابايت`} />
               <div className="pt-3">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-slate-400">مؤشر الصحة</span>
+                  <span className="text-slate-400" title="مؤشر حالة الأصل (0–100): قيمة عمود Asset Health Score في سجل الأصول، تعكس عمر الجهاز وسلامته الفنية وحمايته. 90 فأعلى ممتاز، 75–89 جيد، 60–74 يحتاج متابعة، أقل من 60 يحتاج استبدالاً أو إصلاحاً.">مؤشر حالة الأصل</span>
                   <span className="font-semibold" style={{ color: healthColor(asset["Asset Health Score"]) }}>{asset["Asset Health Score"]}/100</span>
                 </div>
                 <ProgressBar value={asset["Asset Health Score"]} color={healthColor(asset["Asset Health Score"])} />
@@ -1292,7 +1292,7 @@ function DepartmentsPage({ assets, departments, selectedDept, setSelectedDept })
               <div className="text-xs text-slate-400">رئيس القسم: {d["Department Head"]} · وحدة العمل: {tr(d["Business Unit"])}</div>
             </div>
             <div className="flex gap-6">
-              <Stat label="الصحة" value={`${d.health}%`} />
+              <Stat label="متوسط حالة الأصول" value={`${d.health}/100`} />
               <Stat label="الامتثال" value={`${d.compliancePct}%`} />
               <Stat label="الأصول" value={d.items.length} />
               <Stat label="القيمة" value={fmtCompactUSD(d.value)} />
@@ -1327,6 +1327,7 @@ function DepartmentsPage({ assets, departments, selectedDept, setSelectedDept })
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">لوحة الأقسام</h2>
+      <p className="text-xs text-slate-400 -mt-2">متوسط حالة الأصول: متوسط درجة حالة أجهزة القسم من 100 (عمر الجهاز وسلامته الفنية وحمايته)، من عمود Asset Health Score في سجل الأصول. الامتثال: نسبة أصول القسم المصنفة «ممتثل».</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {deptStats.map((d) => (
           <Card key={d["Department"]} className="cursor-pointer hover:shadow-md transition-shadow" >
@@ -1339,7 +1340,7 @@ function DepartmentsPage({ assets, departments, selectedDept, setSelectedDept })
                 <span>القيمة: <b className="text-slate-700 dark:text-slate-200">{fmtCompactUSD(d.value)}</b></span>
                 <span>حرجة: <b className="text-slate-700 dark:text-slate-200">{d.critical}</b></span>
               </div>
-              <div className="flex items-center justify-between text-xs mb-1"><span className="text-slate-400">الصحة</span><span>{d.health}%</span></div>
+              <div className="flex items-center justify-between text-xs mb-1"><span className="text-slate-400" title="مؤشر حالة الأصل (0–100): قيمة عمود Asset Health Score في سجل الأصول، تعكس عمر الجهاز وسلامته الفنية وحمايته. 90 فأعلى ممتاز، 75–89 جيد، 60–74 يحتاج متابعة، أقل من 60 يحتاج استبدالاً أو إصلاحاً.">متوسط حالة الأصول</span><span>{d.health}/100</span></div>
               <ProgressBar value={d.health} color={d.health > 80 ? PALETTE.success : d.health > 60 ? PALETTE.warning : PALETTE.danger} />
               <div className="flex items-center justify-between text-xs mt-2 mb-1"><span className="text-slate-400">الامتثال</span><span>{d.compliancePct}%</span></div>
               <ProgressBar value={d.compliancePct} color={PALETTE.info} />
