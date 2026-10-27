@@ -211,7 +211,7 @@ const AR = {
   // Classification
   "Top Secret": "سري للغاية", Secret: "سري", Confidential: "سري", Internal: "داخلي", Public: "عام", Restricted: "مقيّد",
   // NCA ECC implementation status
-  Implemented: "منفّذ", "Partially Implemented": "منفّذ جزئياً", "Not Implemented": "غير منفّذ", "Not Applicable": "لا ينطبق",
+  Implemented: "مطبق كليًا", "Partially Implemented": "مطبق جزئيًا", "Not Implemented": "غير مطبق", "Not Applicable": "لا ينطبق",
   // Locations
   "Branch Office": "مكتب فرعي", HQ: "المقر الرئيسي", "Remote Office": "مكتب عن بُعد",
   Bangladesh: "بنغلاديش", "Saudi Arabia": "السعودية", UAE: "الإمارات",
@@ -524,7 +524,7 @@ function App() {
     if (noAv > 0) add(`${noAv} أجهزة تعمل بدون حماية من الفيروسات.`, "security", "عرض الأجهزة غير المحمية");
     if (kpis.highRisk > 0) add(`${kpis.highRisk} أصول مصنّفة حالياً بمخاطر مرتفعة أو حرجة.`, "inventory", "فتح سجل الأصول");
     const eccGaps = (DATA.nca || []).filter((r) => r["Implementation Status"] === "Not Implemented").length;
-    if (eccGaps > 0) add(`${eccGaps} ضوابط من ضوابط الهيئة الوطنية للأمن السيبراني (ECC) غير منفّذة.`, "nca", "عرض فجوات NCA");
+    if (eccGaps > 0) add(`${eccGaps} ضوابط من ضوابط الهيئة الوطنية للأمن السيبراني (ECC) غير مطبقة.`, "nca", "عرض فجوات NCA");
     const expiredLic = (DATA.software || []).filter((x) => x["License Status"] === "Expired").length;
     if (expiredLic > 0) add(`${expiredLic} تراخيص برمجيات منتهية تحتاج إلى تجديد.`, "software", "عرض البرمجيات");
     return out;
@@ -1942,9 +1942,9 @@ function NcaPage({ nca }) {
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard icon={FileCheck2} label="أصول المعلومات المقيّمة" value={nca.length} tone="primary" />
-        <KpiCard icon={CheckCircle2} label="نسبة الالتزام بالضوابط" value={compliancePct} suffix="%" tone="success" trendLabel="منفّذ = 1 · منفّذ جزئياً = 0.5" />
-        <KpiCard icon={ShieldAlert} label="ضوابط غير منفّذة" value={notImpl} tone="danger" />
-        <KpiCard icon={AlertTriangle} label="ضوابط منفّذة جزئياً" value={partial} tone="warning" />
+        <KpiCard icon={CheckCircle2} label="نسبة الالتزام بالضوابط" value={compliancePct} suffix="%" tone="success" trendLabel="مطبق كليًا = 1 · مطبق جزئيًا = 0.5" />
+        <KpiCard icon={ShieldAlert} label="ضوابط غير مطبقة" value={notImpl} tone="danger" />
+        <KpiCard icon={AlertTriangle} label="ضوابط مطبقة جزئيًا" value={partial} tone="warning" />
         <KpiCard icon={Lock} label="بيانات سري / سري للغاية" value={secret} tone="warning" />
         <KpiCard icon={AlertTriangle} label="أصول ذات مخاطر حرجة" value={critical} tone="danger" />
       </div>
@@ -1990,7 +1990,7 @@ function NcaPage({ nca }) {
 
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <SectionTitle title="المكونات الفرعية الأعلى في الفجوات" subtitle="عدد الضوابط غير المنفّذة أو المنفّذة جزئياً" icon={AlertTriangle} />
+          <SectionTitle title="المكونات الفرعية الأعلى في الفجوات" subtitle="عدد الضوابط غير المطبقة أو المطبقة جزئيًا" icon={AlertTriangle} />
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={subdomainGaps} layout="vertical" margin={{ right: 12 }}>
               <XAxis reversed type="number" fontSize={10} allowDecimals={false} />
