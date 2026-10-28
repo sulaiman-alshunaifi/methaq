@@ -28,6 +28,5 @@
 React · Tailwind CSS · Recharts · SheetJS · Lucide — تعمل كصفحة ثابتة بدون خادم.
 
 ---
-تصميم وتطوير: سليمان الشنيفي — أكاديمية طويق
 
 </div>
